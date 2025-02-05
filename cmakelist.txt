@@ -1,0 +1,68 @@
+# Generated CMake Pico project file
+
+cmake_minimum_required(VERSION 3.13)
+
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Inicializa o pico_sdk a partir da localização instalada
+# (pode vir de variável de ambiente, cache do CMake etc)
+
+# == NÃO EDITE AS PRÓXIMAS LINHAS para que a extensão do VS Code para Raspberry Pi Pico funcione ==
+if(WIN32)
+    set(USERHOME $ENV{USERPROFILE})
+else()
+    set(USERHOME $ENV{HOME})
+endif()
+set(sdkVersion 1.5.1)
+set(toolchainVersion 13_3_Rel1)
+set(picotoolVersion 2.0.0)
+set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
+if (EXISTS ${picoVscode})
+    include(${picoVscode})
+endif()
+# ====================================================================================
+set(PICO_BOARD pico_w CACHE STRING "Board type")
+
+# Puxa o Raspberry Pi Pico SDK (deve ser feito antes do projeto)
+include(pico_sdk_import.cmake)
+
+project(tarefa6.2 C CXX ASM)
+
+# Inicializa o Raspberry Pi Pico SDK
+pico_sdk_init()
+
+# Adiciona o executável. Aqui estamos considerando:
+# - main.c como arquivo principal do seu código
+# - inc/ssd1306_i2c.c como a implementação do display OLED (além de inc/ssd1306.h)
+add_executable(tarefa6.2 
+    tarefa6.2.c 
+    inc/ssd1306_i2c.c
+)
+
+pico_set_program_name(tarefa6.2 "tarefa6.2")
+pico_set_program_version(tarefa6.2 "0.1")
+
+# Modifique as linhas abaixo para habilitar/desabilitar saída via UART/USB
+pico_enable_stdio_uart(tarefa6.2 0)
+pico_enable_stdio_usb(tarefa6.2 1)
+
+# Adiciona a biblioteca padrão do Pico (stdio, etc)
+target_link_libraries(tarefa6.2
+    pico_stdlib
+)
+
+# Adiciona os diretórios de include padrão
+target_include_directories(tarefa6.2 PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}
+)
+
+# Adiciona as bibliotecas de hardware utilizadas no seu código
+target_link_libraries(tarefa6.2
+    hardware_i2c    # Para comunicação I2C com o display
+    hardware_adc    # Para leitura do ADC (joystick)
+    hardware_pwm    # Para controle dos LEDs e buzzer via PWM
+)
+
+pico_add_extra_outputs(tarefa6.2)
