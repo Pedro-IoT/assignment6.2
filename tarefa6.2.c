@@ -264,40 +264,28 @@ void pwm_led(uint8_t *ssd, struct render_area *frame_area){
 }
 
 void menu(int counter, uint8_t *ssd, struct render_area *frame_area){
-    if(counter == 0){
+    if(counter == 1){
         char *message[] = {
-            "Bem-Vindo", 
-            "Use o joystick", 
-            "verticalmente",
-            "para navegar"
-        };
-        display_message(ssd, frame_area, message, count_of(message));
-    }
-    else if(counter == 1){
-        char *message[] = {
-            "Para controlar o", 
-            "led com joystick", 
-            "pressione o ",
-            "joystick"
+            " x   code 1", 
+            "     code 2", 
+            "     code 3"
         };
         display_message(ssd, frame_area, message, count_of(message));
         
     }
     else if(counter == 2){
         char *message[] = {
-            "Para ouvir", 
-            "o tema do mario", 
-            "pressione o",
-            "joystick"
+            "     code 1", 
+            " x   code 2", 
+            "     code 3"
         };
         display_message(ssd, frame_area, message, count_of(message));
     }
     else if(counter == 3){
         char *message[] = {
-            "Para ver o", 
-            "led azul variar", 
-            "pressione o ",
-            "joystick"
+            "     code 1", 
+            "     code 2", 
+            " x   code 3"
         };
         display_message(ssd, frame_area, message, count_of(message));
     }
