@@ -220,6 +220,7 @@ void joystick_led(uint8_t *ssd, struct render_area *frame_area){
 
 void buzzer_pwm(uint8_t *ssd, struct render_area *frame_area){
     setup_pwm2();
+    int i;
     char *message[] = {
             "Para sair", 
             "pressione o ",
@@ -227,11 +228,12 @@ void buzzer_pwm(uint8_t *ssd, struct render_area *frame_area){
         };
         display_message(ssd, frame_area, message, count_of(message));
     while (1) {
-        for (int i = 0; i < NUM_NOTES; i++) {
+        for (i = 0; i < NUM_NOTES; i++) {
             if(botao_esta_pressionado(SW)) break;
             float noteDuration = QUARTER_NOTE * (4.0f / noteDurations[i]);
             play_note(melody[i], noteDuration);
         }
+        if(i != 32) break;
         if(botao_esta_pressionado(SW)) break;
         sleep_ms(1000);  // Pause before repeating
     }
@@ -247,6 +249,7 @@ void pwm_led(uint8_t *ssd, struct render_area *frame_area){
         };
         display_message(ssd, frame_area, message, count_of(message));
     while (1){
+        sleep_ms(200);
         pwm_set_gpio_level(LED, led_level); // Define o nível atual do PWM (duty cycle)
         int botao_pressionado = WaitWithRead(espera);
         if(botao_pressionado) break;
@@ -266,8 +269,12 @@ void pwm_led(uint8_t *ssd, struct render_area *frame_area){
 void menu(int counter, uint8_t *ssd, struct render_area *frame_area){
     if(counter == 1){
         char *message[] = {
-            " x   code 1", 
-            "     code 2", 
+            "  menu inicial",
+            "               ",
+            " x   code 1",
+            "               ",
+            "     code 2",
+            "               ", 
             "     code 3"
         };
         display_message(ssd, frame_area, message, count_of(message));
@@ -275,16 +282,24 @@ void menu(int counter, uint8_t *ssd, struct render_area *frame_area){
     }
     else if(counter == 2){
         char *message[] = {
-            "     code 1", 
-            " x   code 2", 
+            "  menu inicial",
+            "               ",
+            "     code 1",
+            "               ", 
+            " x   code 2",
+            "               ", 
             "     code 3"
         };
         display_message(ssd, frame_area, message, count_of(message));
     }
     else if(counter == 3){
         char *message[] = {
-            "     code 1", 
-            "     code 2", 
+            "  menu inicial",
+            "               ",
+            "     code 1",
+            "               ",
+            "     code 2",
+            "               ", 
             " x   code 3"
         };
         display_message(ssd, frame_area, message, count_of(message));
@@ -314,7 +329,7 @@ int main(){
 
     uint8_t ssd[ssd1306_buffer_length];
     uint16_t vrx_value, vry_value, sw_value;
-    int contador  = 0;
+    int contador  = 1;
 
     while(1){
         menu(contador, ssd, &frame_area);
@@ -329,7 +344,7 @@ int main(){
         }
         if(vrx_value > 3000){
             contador--;
-            if(contador < 0) contador++;
+            if(contador < 1) contador++;
             menu(contador, ssd, &frame_area);
         }
         switch(contador){
