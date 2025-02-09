@@ -25,7 +25,7 @@ uint16_t led_level = 100;       // Nível inicial do PWM (duty cycle)
 
 int espera = 100;
 
-// Mario theme melody and durations (simplified)
+// Melodia do tema de Mario Bros
 const float melody[] = {
     659, 659, 659, 523, 659, 784, 0,
     392, 0, 523, 392, 0, 330, 0,
@@ -34,6 +34,7 @@ const float melody[] = {
     523, 587, 494, 0
 };
 
+// Duração das notas
 const float noteDurations[] = {
     8, 8, 8, 8, 8, 8, 8,
     8, 8, 8, 8, 8, 8, 8,
@@ -43,7 +44,7 @@ const float noteDurations[] = {
 };
 
 #define TEMPO 200
-#define QUARTER_NOTE (60000.0f / TEMPO)  // ms per quarter note
+#define QUARTER_NOTE (60000.0f / TEMPO)  // ms por quarto de nota
 #define NUM_NOTES (sizeof(melody) / sizeof(melody[0]))
 
 // Definição dos pinos usados para o joystick e LEDs
@@ -159,11 +160,12 @@ void setup_pwm2() {
     gpio_set_function(BUZZER_PIN, GPIO_FUNC_PWM);
     uint slice_num = pwm_gpio_to_slice_num(BUZZER_PIN);
     pwm_config config = pwm_get_default_config();
-    pwm_config_set_clkdiv(&config, 125.0f);  // 1MHz clock
+    pwm_config_set_clkdiv(&config, 125.0f);  // Ajusta divisor de clock
     pwm_config_set_wrap(&config, 0);
     pwm_init(slice_num, &config, true);
 }
 
+// Toca uma nota com a frequência e duração especificadas
 void play_note(float freq, float duration) {
     if (freq == 0) {
         pwm_set_gpio_level(BUZZER_PIN, 0);
@@ -171,7 +173,7 @@ void play_note(float freq, float duration) {
         return;
     }
 
-    uint32_t period = 1000000 / freq;  // microseconds
+    uint32_t period = 1000000 / freq;  // microsegundos
     uint32_t wrap = period - 1;
     uint32_t level = wrap / 2;
 
@@ -179,7 +181,7 @@ void play_note(float freq, float duration) {
     pwm_set_gpio_level(BUZZER_PIN, level);
     sleep_ms(duration);
     
-    // Brief silence between notes
+    // Pequeno intervalo entre notas
     pwm_set_gpio_level(BUZZER_PIN, 0);
     sleep_ms(10);
 }
@@ -197,8 +199,7 @@ int WaitWithRead(int timeMS) {
 
 void joystick_led(uint8_t *ssd, struct render_area *frame_area){
     uint16_t vrx_value, vry_value, sw_value; // Variáveis para armazenar os valores do joystick (eixos X e Y) e botão
-    printf("Joystick-PWM\n");                // Exibe uma mensagem inicial via porta serial
-    char *message[] = {
+    char *message[] = {                      // Exibe mensagem para o usuário no display
             "Para sair", 
             "pressione o ",
             "joystick"
@@ -232,10 +233,11 @@ void buzzer_pwm(uint8_t *ssd, struct render_area *frame_area){
             if(botao_esta_pressionado(SW)) break;
             float noteDuration = QUARTER_NOTE * (4.0f / noteDurations[i]);
             play_note(melody[i], noteDuration);
+            if(botao_esta_pressionado(SW)) break;
         }
-        if(i != 32) break;
+        if(i != 32) break;      // Checa se o loop anterior foi quebrado antes da duração padrão(i = 32)
         if(botao_esta_pressionado(SW)) break;
-        sleep_ms(1000);  // Pause before repeating
+        sleep_ms(1000);  // Pausa antes de repetir
     }
 }
 
@@ -270,7 +272,7 @@ void menu(int counter, uint8_t *ssd, struct render_area *frame_area){
     if(counter == 1){
         char *message[] = {
             "  menu inicial",
-            "               ",
+            "               ",      // Espaçamento para melhor legibilidade das linhas 
             " x   code 1",
             "               ",
             "     code 2",
@@ -329,7 +331,7 @@ int main(){
 
     uint8_t ssd[ssd1306_buffer_length];
     uint16_t vrx_value, vry_value, sw_value;
-    int contador  = 1;
+    int contador  = 1;      // Variável que controla o menu
 
     while(1){
         menu(contador, ssd, &frame_area);
@@ -337,20 +339,20 @@ int main(){
         pwm_set_gpio_level(LED_R, 0);
         pwm_set_gpio_level(LED, 0);
         joystick_read_axis(&vrx_value, &vry_value); // Lê os valores dos eixos do joystick
-        if(vrx_value < 1000){
-            contador++;
-            if(contador > 3) contador--;
-            menu(contador, ssd, &frame_area);
+        if(vrx_value < 1000){           // Verifica se a movimentação do joystick foi para baixo
+            contador++;                 // Se sim, incrementa o contador
+            if(contador > 3) contador = 1;      // Se o contador for passar da última linha volta para a primeira
+            menu(contador, ssd, &frame_area);   // Chama a função que atualiza o menu
         }
-        if(vrx_value > 3000){
-            contador--;
-            if(contador < 1) contador++;
-            menu(contador, ssd, &frame_area);
+        if(vrx_value > 3000){           // Verifica se a movimentação do joystick foi para cima
+            contador--;                 // Se sim, decrementa o contador
+            if(contador < 1) contador = 3;      // Se o contador for passar da primeira linha volta para a última
+            menu(contador, ssd, &frame_area);   // Chama a função que atualiza o menu
         }
-        switch(contador){
+        switch(contador){       // Chama as funções dos códigos baseados nos exemplos do github bitdoglab
             case 1:
-                if(botao_esta_pressionado(SW)) joystick_led(ssd, &frame_area);
-                break;
+                if(botao_esta_pressionado(SW)) joystick_led(ssd, &frame_area);      // Checa se o botão do joystick foi pressionado
+                break;                                                              // e chama a função correspondente ao contador
             case 2:
                 if(botao_esta_pressionado(SW)) buzzer_pwm(ssd, &frame_area);
                 break;
